@@ -1,0 +1,8 @@
+git+https://git@github.com/konradswierczek/pyramidi.git@3c00bcc
+librosa==0.11.0
+essentia==2.1b6.dev1389
+mido
+soundfile
+tqdm
+psutil
+#matlabengine==25.2.2

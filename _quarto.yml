@@ -1,0 +1,32 @@
+project:
+  type: website
+
+website:
+  title: "Paper Title Goes Here."
+  description: "Reproducible data, results, and analysis from Swierczek & Schutz, in review (Psychology of Music)."
+  site-url: "https://konradswierczek.github.io/Evaluating-Transformations"
+  repo-url: "https://github.com/konradswierczek/Evaluating-Transformations"
+  navbar:
+    background: secondary
+    logo: https://maplelabs.info/wp-content/uploads/2018/05/final_head-darker-leaf-png-300x300.png
+    logo-href: https://maplelab.net
+    left:
+      - href: index.qmd
+        text: Home
+      - icon: github
+        href: https://github.com/konradswierczek/Evaluating-Transformations
+
+  page-footer: 
+    right: 
+      - icon: browser-chrome
+        href: https://konradswierczek.ca
+      - icon: envelope
+        href: mailto:swierckj@mcmaster.ca
+      - icon: github
+        href: https://github.com/konradswierczek/Evaluating-Transformations
+
+execute:
+  execute-dir: project
+
+  page-navigation: true
+  back-to-top-navigation: true

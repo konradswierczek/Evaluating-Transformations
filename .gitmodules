@@ -1,0 +1,3 @@
+[submodule "src/matlab/mirtoolbox"]
+	path = src/matlab/mirtoolbox
+	url = https://github.com/olivierlar/mirtoolbox.git

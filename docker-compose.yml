@@ -1,0 +1,120 @@
+services:
+  setup-experiment:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: >
+      python3 -m src.python.experiment.setup
+
+  generate-audio:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: >
+      python3 -m src.python.experiment.generate_files
+
+  extract-features:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: >
+      python3 -m src.python.experiment.extract_features
+
+    # No service for MATLAB: see README.md for more info.
+
+  restore-renv:
+    image: rocker/verse:4.5.0
+    volumes:
+      - ./:/home/rstudio/app
+      - renv-cache:/renv/cache
+    working_dir: /home/rstudio/app
+    ports:
+      - "3838:3838"
+    environment:
+      - RENV_PATHS_CACHE=/renv/cache
+    command: >
+      R -e "renv::restore()"
+
+  generate-supplementary:
+    image: rocker/verse:4.5.0
+    volumes:
+      - ./:/home/rstudio/app
+    working_dir: /home/rstudio/app 
+    command: >
+      Rscript -e "
+        renv::restore();
+        source('src/R/supplementary/ambitus.R');
+        source('src/R/supplementary/benchmarks.R');
+        source('src/R/supplementary/errors.R');
+        source('src/R/supplementary/inventory.R')
+      "
+
+  generate-figures:
+    image: rocker/verse:4.5.0
+    volumes:
+      - ./:/home/rstudio/app
+      - renv-cache:/renv/cache
+    working_dir: /home/rstudio/app 
+    environment:
+      - RENV_PATHS_CACHE=/renv/cache
+    command: >
+      Rscript -e "
+        renv::restore();
+        source('src/R/read_data.R');
+        source('src/R/figures/figure_1.R');
+        source('src/R/figures/figure_2.R');
+        source('src/R/figures/figure_3.R');
+        source('src/R/figures/figure_4.R');
+        source('src/R/figures/figure_5.R')
+      "
+
+  generate-inference:
+    image: rocker/verse:4.5.0
+    volumes:
+      - ./:/home/rstudio/app
+      - renv-cache:/renv/cache
+    working_dir: /home/rstudio/app 
+    environment:
+      - RENV_PATHS_CACHE=/renv/cache
+    command: >
+      Rscript -e "
+        renv::restore();
+        source('src/R/read_data.R');
+        source('src/R/inference.R')
+      "
+
+  generate-pages:
+    image: rocker/verse:4.5.0
+    volumes:
+      - ./:/home/rstudio/app
+      - renv-cache:/renv/cache
+    working_dir: /home/rstudio/app 
+    environment:
+      - RENV_PATHS_CACHE=/renv/cache
+    command: >
+      quarto render --output-dir _site
+
+  shiny-app:
+    image: rocker/verse:4.5.0
+    volumes:
+      - ./:/home/rstudio/app
+      - renv-cache:/renv/cache
+    working_dir: /home/rstudio/app
+    ports:
+      - "3838:3838"
+    environment:
+      - RENV_PATHS_CACHE=/renv/cache
+    command: >
+      R -e "renv::restore(); shiny::runApp('app.R', host='0.0.0.0', port=3838)"
+
+volumes:
+  renv-cache:

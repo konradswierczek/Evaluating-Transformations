@@ -1,0 +1,7 @@
+.venv
+__pycache__
+Rplots.pdf
+*.wav
+_site
+
+/.quarto/

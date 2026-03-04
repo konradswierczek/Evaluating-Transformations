@@ -1,0 +1,99 @@
+=============================================================
+  INFERENCE SUMMARY
+  Seed: 1618 | Resamples: 10000
+  Generated: 2026-03-03 20:43:48 UTC
+=============================================================
+
+-------------------------------------------------------------
+  FEATURE: Relative Mode
+-------------------------------------------------------------
+
+  [Omnibus] Tool effect (stratified by transformation)
+
+	Approximative K-Sample Fisher-Pitman Permutation Test
+
+data:  rdb by
+	 tool (Essentia, Librosa, MIRtoolbox) 
+	 stratified by transformation
+chi-squared = 235.56, p-value < 1e-04
+
+
+  [Omnibus] Transformation effect (stratified by tool)
+
+	Approximative K-Sample Fisher-Pitman Permutation Test
+
+data:  rdb by
+	 transformation (Dynamics, Tempo, Pitch) 
+	 stratified by tool
+chi-squared = 298.54, p-value < 1e-04
+
+
+  [Interaction] Tool × Transformation (residual independence test)
+
+	Approximative General Independence Test
+
+data:  resid_additive_mode by
+	 interaction (Essentia.Dynamics, Librosa.Dynamics, MIRtoolbox.Dynamics, Essentia.Tempo, Librosa.Tempo, MIRtoolbox.Tempo, Essentia.Pitch, Librosa.Pitch, MIRtoolbox.Pitch)
+maxT = 8.063, p-value < 1e-04
+alternative hypothesis: two.sided
+
+
+  [Post-hoc] Pairwise tool comparisons (Holm-corrected)
+                 Comparison   Stat p.value p.adjust
+1    Essentia - Librosa = 0   10.4       0   0.0000
+2 Essentia - MIRtoolbox = 0  8.521       0   0.0000
+3  Librosa - MIRtoolbox = 0 -3.142  0.0012   0.0012
+
+  [Post-hoc] Pairwise transformation comparisons (Holm-corrected)
+            Comparison   Stat p.value p.adjust
+1 Dynamics - Tempo = 0 -9.212       0        0
+2 Dynamics - Pitch = 0 -14.24       0        0
+3    Tempo - Pitch = 0  -8.13       0        0
+
+-------------------------------------------------------------
+  FEATURE: Onsets (#)
+-------------------------------------------------------------
+
+  [Omnibus] Tool effect (stratified by transformation)
+
+	Approximative K-Sample Fisher-Pitman Permutation Test
+
+data:  rdb by
+	 tool (Essentia, Librosa, MIRtoolbox) 
+	 stratified by transformation
+chi-squared = 85.024, p-value < 1e-04
+
+
+  [Omnibus] Transformation effect (stratified by tool)
+
+	Approximative K-Sample Fisher-Pitman Permutation Test
+
+data:  rdb by
+	 transformation (Dynamics, Tempo, Pitch) 
+	 stratified by tool
+chi-squared = 54.093, p-value < 1e-04
+
+
+  [Interaction] Tool × Transformation (residual independence test)
+
+	Approximative General Independence Test
+
+data:  resid_additive_onsets by
+	 interaction (Essentia.Dynamics, Librosa.Dynamics, MIRtoolbox.Dynamics, Essentia.Tempo, Librosa.Tempo, MIRtoolbox.Tempo, Essentia.Pitch, Librosa.Pitch, MIRtoolbox.Pitch)
+maxT = 5.2256, p-value = 1e-04
+alternative hypothesis: two.sided
+
+
+  [Post-hoc] Pairwise tool comparisons (Holm-corrected)
+                 Comparison   Stat p.value p.adjust
+1    Essentia - Librosa = 0  3.407   6e-04    6e-04
+2 Essentia - MIRtoolbox = 0 -5.397       0    0e+00
+3  Librosa - MIRtoolbox = 0 -8.251       0    0e+00
+
+  [Post-hoc] Pairwise transformation comparisons (Holm-corrected)
+            Comparison   Stat p.value p.adjust
+1 Dynamics - Tempo = 0 -6.485       0   0.0000
+2 Dynamics - Pitch = 0  -6.65       0   0.0000
+3    Tempo - Pitch = 0 -1.408  0.1593   0.1593
+
+=============================================================

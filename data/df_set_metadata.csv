@@ -1,0 +1,4 @@
+setCode,set,title,type,era,opus,fullName,composer,firstName,initials,Years,yearActual,yearSimple,birthYear,deathYear
+bach-1,1,"Well-Tempered Clavier, Book 1 (Preludes)",prelude,Baroque,BWV 846-69,Johann Sebastian Bach,Bach,Johann Sebastian,JSB,1722,1722,1722,1685,1750
+chopin-1,1,24 Preludes,prelude,Romantic,Op. 28,Frédéric Chopin,Chopin,Frédéric,FC,1835-1839,1839,1835,1810,1849
+shostakovich-1,1,24 Preludes,prelude,Modern,Op. 34,Dmitri Shostakovich,Shostakovich,Dmitri,DS,1932-1933,1933,1932,1906,1975
