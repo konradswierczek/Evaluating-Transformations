@@ -1,13 +1,97 @@
 # src/R/figures/figure_4.R
-# Figure 4: A comparison of the extracted values from the most and least extreme RDB preludes for two combinations of feature, tool, and transformation. A shows the the effect of T~pitch~ on relative mode extracted by Essentia, and B shows the effect of T~tempo~ on onset detection performed by Essentia. Horizontal lines and filled dots correspond to the untransformed, or baseline audio file. Each unfilled dot represents a specific value of the transformation, with the x axis representing the level of that transformation. Vertical lines are proportional to the degree of deviation from the baseline value.
+# Figure 4: A comparison of the extracted values from four preludes for two combinations of feature, tool, and transformation. A shows the the effect of T~pitch~ on relative mode extracted by Essentia, and B shows the effect of T~tempo~ on onset detection performed by Essentia. Horizontal lines and filled dots correspond to the untransformed, or baseline audio file. Each unfilled dot represents a specific value of the transformation, with the x axis representing the level of that transformation. Vertical lines are proportional to the degree of deviation from the baseline value.
 
 # =========================================================================== #
 library(ggplot2)
 library(MAPLEemo)
 library(patchwork)
-source("src/R/plotters.R")
+library(dplyr)
 
 # =========================================================================== #
+plot_one_piece <- function(t, f, tf, p, s, ylims = NULL) {
+    df <- df_diff |>
+      filter(
+        tool == t,
+        feature == f,
+        transformation == tf,
+        pieceID == p,
+        setCode == s
+      )
+    
+    full_name <- df$fullName[1]
+    piece <- df$piece[1]
+    
+    df |>
+      ggplot(
+        aes(
+          x = level,
+          y = value,
+          colour = tool
+        )
+      ) +
+      geom_hline(
+        aes(
+          yintercept = value_baseline
+        ),
+        colour = "gray"
+      ) +
+      geom_segment(
+        aes(
+          y = value_baseline,
+          yend = value
+        ),
+        linetype = 1
+      ) +
+      geom_point(
+        fill = "white",
+        shape = 21
+      ) +
+      geom_point(
+        aes(y = value_baseline),
+        x = 0,
+        fill = "white",
+        shape = 16
+      ) +
+      labs(
+        x = paste0(
+          "Transformation Level (",
+          tf,
+          ")"
+        ),
+        y = f,
+        colour = "Tool",
+        title = paste(
+          tail(strsplit(full_name, " ")[[1]], 1),
+          piece
+        )
+      ) +
+      { if (!is.null(ylims)) lims(y = ylims) } +
+      scale_colour_manual(values = colours_tool) +
+      theme_maple() +
+      theme(legend.position = "none")
+}
+
+df_fig4 <- df_diff |>
+  group_by(
+    feature, tool, transformation
+  ) |>
+  mutate(
+    rdb = abs(value - value_baseline) / sd(value_baseline)
+  ) |>
+  filter(
+    level != 0
+  ) |>
+  filter(
+    (feature == "Relative Mode" & transformation == "Pitch") |
+    (feature == "Onsets (#)" & transformation == "Tempo")
+  ) |>
+  group_by(pieceID, setCode, feature, tool, transformation) |>
+  summarize(mean_rdb = mean(rdb)) |>
+  group_by(feature, tool, transformation) |>
+  arrange(mean_rdb, .by_group = TRUE) |>
+  slice(round(seq(1, n(), length.out = 4))) |>
+  ungroup()
+
 
 lims_pitch <- df_diff |>
   filter(feature == "Relative Mode", transformation == "Pitch") |>
@@ -19,22 +103,50 @@ lims_tempo <- df_diff |>
   summarise(lo = min(value, value_baseline), hi = max(value, value_baseline)) |>
   unlist()
 
-(
-  plot_one_piece("Essentia", "Relative Mode", "Pitch", "M4",  "bach-1",   lims_pitch) +
-  plot_one_piece("Essentia", "Relative Mode", "Pitch", "M2",  "chopin-1", lims_pitch) +
+plots_pitch <- df_fig4 |>
+  filter(tool == "Essentia") |>
+  filter(feature == "Relative Mode", transformation == "Pitch") |>
+  arrange(mean_rdb) |>
+  distinct(tool, feature, transformation, pieceID, setCode, mean_rdb) |>
+  mutate(
+    plot = purrr::pmap(
+      list(tool, feature, transformation, pieceID, setCode),
+      \(t, f, tf, p, s)
+        plot_one_piece(t, f, tf, p, s, lims_pitch)
+    )
+  ) |>
+  pull(plot)
+
+plots_tempo <- df_fig4 |>
+  filter(tool == "MIRtoolbox") |>
+  filter(feature == "Onsets (#)", transformation == "Tempo") |>
+  arrange(mean_rdb) |>
+  distinct(tool, feature, transformation, pieceID, setCode, mean_rdb) |>
+  mutate(
+    plot = purrr::pmap(
+      list(tool, feature, transformation, pieceID, setCode),
+      \(t, f, tf, p, s)
+        plot_one_piece(t, f, tf, p, s, lims_tempo)
+    )
+  ) |>
+  pull(plot)
+
+pitch_row <- wrap_plots(plots_pitch, nrow = 1) +
   plot_layout(axis_titles = "collect")
-) /
-(
-  plot_one_piece("Essentia", "Onsets (#)", "Tempo", "M10", "bach-1", lims_tempo) +
-  plot_one_piece("Essentia", "Onsets (#)", "Tempo", "M0",  "bach-1", lims_tempo) +
+
+tempo_row <- wrap_plots(plots_tempo, nrow = 1) +
   plot_layout(axis_titles = "collect")
-) +
-plot_annotation(tag_levels = list(c("A", "", "B", "")))
+
+final_plot <-
+  pitch_row /
+  tempo_row +
+  plot_annotation(tag_levels = list(c("A", "", "", "", "B", "", "", "")))
 
 ggsave(
   "img/figure_4.png",
-  width = 10,
-  height = 10
+  final_plot,
+  width = 12,
+  height = 6
 )
 
 # =========================================================================== #

@@ -13,10 +13,10 @@ SEED = 1618
 set.seed(SEED)
 
 # =========================================================================== #
-# Calculate RDB for each level of feature and tool.
+# Calculate RDB..
 df_fig3a <- df_diff |>
   group_by(
-    feature, tool
+    feature, tool, transformation
   ) |>
   mutate(
     rdb = abs(value - value_baseline) / sd(value_baseline)

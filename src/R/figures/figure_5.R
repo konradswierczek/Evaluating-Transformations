@@ -62,6 +62,16 @@ df_fig5b <- bind_rows(
     )
   )
 
+df_fig5b |>
+  group_by(feature, tool) |>
+  mutate(
+    albums_mean = mean[transformation == "Albums"],
+    pct_of_albums = (mean / albums_mean) * 100
+  ) |>
+  ungroup() |>
+  filter(transformation != "Albums") |>
+  select(feature, tool, transformation, pct_of_albums) |> filter(transformation == "Dynamics")
+
 # Plot.
 df_fig5b |>
   ggplot(
