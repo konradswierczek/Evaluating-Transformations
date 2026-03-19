@@ -8,14 +8,24 @@ library(patchwork)
 library(dplyr)
 
 # =========================================================================== #
-plot_one_piece <- function(t, f, tf, p, s, ylims = NULL) {
+
+slide_constant <- 0.25
+
+plot_one_piece <- function(f, tf, p, s, ylims = NULL) {
     df <- df_diff |>
       filter(
-        tool == t,
         feature == f,
         transformation == tf,
         pieceID == p,
-        setCode == s
+        setCode == s,
+        level != 0
+      ) |>
+      mutate(
+        level = case_when(
+          tool == "Librosa" ~ level - slide_constant,
+          tool == "Essentia" ~ level + slide_constant,
+          .default = level 
+        )
       )
     
     full_name <- df$fullName[1]
@@ -31,26 +41,28 @@ plot_one_piece <- function(t, f, tf, p, s, ylims = NULL) {
       ) +
       geom_hline(
         aes(
-          yintercept = value_baseline
+          yintercept = value_baseline,
+          colour = tool
         ),
-        colour = "gray"
+        alpha = 0.2
       ) +
       geom_segment(
         aes(
           y = value_baseline,
           yend = value
         ),
-        linetype = 1
-      ) +
-      geom_point(
-        fill = "white",
-        shape = 21
+        linetype = 1,
+        alpha = 0.35
       ) +
       geom_point(
         aes(y = value_baseline),
         x = 0,
         fill = "white",
         shape = 16
+      ) +
+      geom_point(
+        fill = "white",
+        shape = 21
       ) +
       labs(
         x = paste0(
@@ -68,7 +80,7 @@ plot_one_piece <- function(t, f, tf, p, s, ylims = NULL) {
       { if (!is.null(ylims)) lims(y = ylims) } +
       scale_colour_manual(values = colours_tool) +
       theme_maple() +
-      theme(legend.position = "none")
+      theme(legend.position = "bottom")
 }
 
 df_fig4 <- df_diff |>
@@ -87,7 +99,7 @@ df_fig4 <- df_diff |>
   ) |>
   group_by(pieceID, setCode, feature, tool, transformation) |>
   summarize(mean_rdb = mean(rdb)) |>
-  group_by(feature, tool, transformation) |>
+  group_by(feature, transformation) |>
   arrange(mean_rdb, .by_group = TRUE) |>
   slice(round(seq(1, n(), length.out = 4))) |>
   ungroup()
@@ -104,29 +116,27 @@ lims_tempo <- df_diff |>
   unlist()
 
 plots_pitch <- df_fig4 |>
-  filter(tool == "Essentia") |>
   filter(feature == "Relative Mode", transformation == "Pitch") |>
   arrange(mean_rdb) |>
-  distinct(tool, feature, transformation, pieceID, setCode, mean_rdb) |>
+  distinct(feature, transformation, pieceID, setCode, mean_rdb) |>
   mutate(
     plot = purrr::pmap(
-      list(tool, feature, transformation, pieceID, setCode),
-      \(t, f, tf, p, s)
-        plot_one_piece(t, f, tf, p, s, lims_pitch)
+      list(feature, transformation, pieceID, setCode),
+      \(f, tf, p, s)
+        plot_one_piece(f, tf, p, s, lims_pitch)
     )
   ) |>
   pull(plot)
 
 plots_tempo <- df_fig4 |>
-  filter(tool == "MIRtoolbox") |>
   filter(feature == "Onsets (#)", transformation == "Tempo") |>
   arrange(mean_rdb) |>
-  distinct(tool, feature, transformation, pieceID, setCode, mean_rdb) |>
+  distinct(feature, transformation, pieceID, setCode, mean_rdb) |>
   mutate(
     plot = purrr::pmap(
-      list(tool, feature, transformation, pieceID, setCode),
-      \(t, f, tf, p, s)
-        plot_one_piece(t, f, tf, p, s, lims_tempo)
+      list(feature, transformation, pieceID, setCode),
+      \(f, tf, p, s)
+        plot_one_piece(f, tf, p, s, lims_tempo)
     )
   ) |>
   pull(plot)
@@ -138,9 +148,13 @@ tempo_row <- wrap_plots(plots_tempo, nrow = 1) +
   plot_layout(axis_titles = "collect")
 
 final_plot <-
-  pitch_row /
-  tempo_row +
-  plot_annotation(tag_levels = list(c("A", "", "", "", "B", "", "", "")))
+  wrap_plots(
+    pitch_row, tempo_row,
+    ncol = 1
+  ) +
+  plot_layout(guides = "collect") +
+  plot_annotation(tag_levels = list(c("A", "", "", "", "B", "", "", ""))) &
+  theme(legend.position = "bottom")
 
 ggsave(
   "img/figure_4.png",
