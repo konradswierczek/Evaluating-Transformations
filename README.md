@@ -1,6 +1,6 @@
 # PAPER TITLE GOES HERE
 
-Data and reproducible analysis for "PAPER TITLE GOES HERE" by Konrad Swierczek & Michael Schutz submitted in Psychology of Music. This repository is roughly split into two halves: file generation and MIR analysis, run in Python (and a little bit of MATLAB for MIRtoolbox), and statistical analysis and data visualization, run in R.
+Data and reproducible analysis for "Using Irrelevant Musical Transformations to Evaluate the Robustness of Audio Features Without Ground Truth" by Konrad Swierczek & Michael Schutz submitted in Psychology of Music. This repository is roughly split into two halves: file generation and MIR analysis, run in Python (and a little bit of MATLAB for MIRtoolbox), and statistical analysis and data visualization, run in R.
 
 ## Organization
 ```
@@ -46,7 +46,6 @@ python3 -m src.python.experiment.extract_features_matlab
 - SQL runs aren't super "smart": could check if a task has already been completed in db.
 - Shiny app summary figure could use more work
 - Deploy Shiny app
-- Populate GH Pages
-- Supplementary materials
+- Expand on GH Pages
 - Calculate RDB once (not that important)
 - Move python to remir

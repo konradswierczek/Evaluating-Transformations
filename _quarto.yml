@@ -2,7 +2,7 @@ project:
   type: website
 
 website:
-  title: "Paper Title Goes Here."
+  title: "Using Irrelevant Musical Transformations to Evaluate the Robustness of Audio Features Without Ground Truth"
   description: "Reproducible data, results, and analysis from Swierczek & Schutz, in review (Psychology of Music)."
   site-url: "https://konradswierczek.github.io/Evaluating-Transformations"
   repo-url: "https://github.com/konradswierczek/Evaluating-Transformations"

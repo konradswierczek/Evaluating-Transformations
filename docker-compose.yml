@@ -42,20 +42,6 @@ services:
     command: >
       R -e "renv::restore()"
 
-  generate-supplementary:
-    image: rocker/verse:4.5.0
-    volumes:
-      - ./:/home/rstudio/app
-    working_dir: /home/rstudio/app 
-    command: >
-      Rscript -e "
-        renv::restore();
-        source('src/R/supplementary/ambitus.R');
-        source('src/R/supplementary/benchmarks.R');
-        source('src/R/supplementary/errors.R');
-        source('src/R/supplementary/inventory.R')
-      "
-
   generate-figures:
     image: rocker/verse:4.5.0
     volumes:
