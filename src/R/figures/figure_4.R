@@ -97,7 +97,7 @@ df_fig4 <- df_diff |>
     (feature == "Relative Mode" & transformation == "Pitch") |
     (feature == "Onsets (#)" & transformation == "Tempo")
   ) |>
-  group_by(pieceID, setCode, feature, tool, transformation) |>
+  group_by(pieceID, setCode, feature, transformation) |>
   summarize(mean_rdb = mean(rdb)) |>
   group_by(feature, transformation) |>
   arrange(mean_rdb, .by_group = TRUE) |>
