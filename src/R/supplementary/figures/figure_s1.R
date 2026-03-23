@@ -88,5 +88,5 @@ ggsave(
   "img/figure_s1.png",
   fig4,
   width = 8.5,
-  height = 11
+  height = 10
 )
