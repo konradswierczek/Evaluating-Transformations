@@ -1,4 +1,5 @@
-git+https://git@github.com/konradswierczek/pyramidi.git@3c00bcc
+git+https://git@github.com/konradswierczek/pyramidi.git@80a997f
+git+https://git@github.com/konradswierczek/remir.git@5553bcd
 librosa==0.11.0
 essentia==2.1b6.dev1389
 mido

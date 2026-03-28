@@ -8,33 +8,33 @@ import logging
 
 # Third Party Imports.
 from tqdm import tqdm
+from remir.entities import AudioFileID
+from remir.writers import SQLite3Interface, sqlite_adapt
+from remir.timer import Timer
+from remir.logger import get_logger, log_exception
 
 # Local Imports.
 from src.python.extractors import *
-from src.python.entities.files import AudioFileID
-from src.python.sql import SQLiteInterface, sqlite_adapt
-from src.python.timer import Timer
-from src.python.logger import get_logger, log_exception
 
 # =========================================================================== #
 # Setup.
 DB_PATH = "data/data.db"
-sql = SQLiteInterface(DB_PATH)
+sql = SQLite3Interface(DB_PATH)
 
 ti = Timer(
-    sql=sql,
+    writer=lambda record: sql.insert("timing", record),
     store_events=False
 )
 
 logger = get_logger(
-    sql,
+    writer=lambda r: sql.insert("logs", r),
     console_level=logging.INFO,
-    db_level=logging.INFO
+    writer_level=logging.INFO
 )
 logger.info("Started Analyzing Files...")
 
 with ti.track(
-    "setup",
+    "extraction_setup",
     category="setup"
 ):
     audio_path = Path("etc/audio")
@@ -59,19 +59,7 @@ with ti.track(
 # Analsis Loop.
 for a_idx, audio_file in enumerate(audio_files):
     audio_id = AudioFileID(audio_file)
-    # TODO: Could do FKs, let db enforce.
-    existing = sql.execute_raw(
-        "SELECT * FROM files WHERE uid = ?;",
-        (audio_id.sha256, )
-    )
-    if not existing:
-        log_exception(
-            logger,
-            f"File not found in DB, skipping: {audio_file}",
-            file=audio_id.sha256
-        )
-        continue
-
+    # TODO: Check if file exists in DB.
     for e_idx, e in enumerate(extractors):
         try:
             with ti.track(
@@ -94,7 +82,7 @@ for a_idx, audio_file in enumerate(audio_files):
                     "file": audio_id.sha256
                 }
             ):
-                sql.write(
+                sql.insert(
                     "features",
                     sqlite_adapt({
                         "file_uid": audio_id.sha256,

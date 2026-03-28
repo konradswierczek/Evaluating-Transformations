@@ -1,6 +1,7 @@
 """
 
 """
+# TODO: Remove duplicate files
 
 # =========================================================================== #
 # Built-in Imports.
@@ -12,25 +13,47 @@ from datetime import datetime, timezone
 from tqdm import tqdm
 
 # Local Imports.
-from src.python.generate import generate_audio
-from src.python.entities.files import AudioFileID, MIDIFileID
-from src.python.entities.transformations import TransformationVector
-from src.python.sql import SQLiteInterface, sqlite_adapt
-from src.python.timer import Timer
-from src.python.logger import get_logger, log_exception
-from src.python.system_data import get_all_system_data
+from pyramidi import (
+    PyraMIDIFile,
+    MIDI2Audio,
+    SetVelocity,
+    TransformTempo,
+    TransformPitch,
+    SynthesizeAudio,
+    changes_from_spec
+)
+from remir.entities import AudioFileID, MIDIFileID
+from remir.writers import SQLite3Interface, sqlite_adapt
+from remir.timer import Timer
+from remir.logger import get_logger, log_exception
+from remir.system import get_all_system_data
+
+from src.python.file_namer import filename_from_spec
 
 # =========================================================================== #
 # Setup.
 DB_PATH = "data/data.db"
-sql = SQLiteInterface(DB_PATH)
+sql = SQLite3Interface(DB_PATH)
 
+ti = Timer(
+    writer=lambda record: sql.insert("timing", record),
+    store_events=False
+)
+
+logger = get_logger(
+    writer=lambda r: sql.insert("logs", r),
+    console_level=logging.INFO,
+    writer_level=logging.INFO
+)
+logger.info("Started Generating Files...")
+
+# TODO: Add timer?
 # Generate timestamp-based UID (UTC, microseconds).
 run_uid = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f")
 # Collect system + git metadata.
 run_metadata = get_all_system_data()
 # Write system metadata.
-sql.write(
+sql.insert(
     "runs",
     sqlite_adapt({
         "uid": run_uid,
@@ -39,29 +62,23 @@ sql.write(
     })
 )
 
-ti = Timer(
-    sql=sql,
-    store_events=False
-)
-
-logger = get_logger(
-    sql,
-    console_level=logging.INFO,
-    db_level=logging.INFO
-)
 logger.info("Started Generating Files...")
 
 with ti.track(
-    "setup",
+    "generation_setup",
     category="setup"
 ):
     # Establish the transformations.
     transposition_range = range(-7, 8)
     velocity_range = range(24, 105, 2)
     tempo_range = [0.75 + i * 0.01 for i in range(51)]
-    transformation_vectors = [TransformationVector(transposition=t) for t in transposition_range] + \
-        [TransformationVector(velocity=v) for v in velocity_range] + \
-            [TransformationVector(tempo_ratio=tempo) for tempo in tempo_range]
+    change_vectors = [
+        [TransformPitch(t), SynthesizeAudio()] for t in range(-7, 8)
+    ] + [
+        [SetVelocity(v), SynthesizeAudio()] for v in range(24, 105, 2)
+    ] + [
+        [TransformTempo(tempo), SynthesizeAudio()] for tempo in [0.75 + i * 0.01 for i in range(51)]
+    ]
 
     # Set paths.
     seed_midi_path = Path("etc/seed_midi")
@@ -76,16 +93,18 @@ with ti.track(
 # Generation Loop.
 for m_idx, midi_file in enumerate(seed_midi_files):
     midi_id = MIDIFileID(midi_file)
+    midi = PyraMIDIFile(midi_file)
     piece_folder = audio_path / midi_file.stem
     piece_folder.mkdir(
         parents=True,
         exist_ok=True
     )
 
-    for t_idx, t in enumerate(transformation_vectors):
+    for t_idx, t in enumerate(change_vectors):
         try:
-            signature = t.signature()
-            output_path = piece_folder / f"{signature}.wav"
+            changer = MIDI2Audio(t)
+            audio_file_name = filename_from_spec(changer)
+            output_path = piece_folder / f"{audio_file_name}.wav"
 
             with ti.track(
                 "generate_audio_file",
@@ -93,17 +112,14 @@ for m_idx, midi_file in enumerate(seed_midi_files):
                 iteration=t_idx,
                 meta={
                     "seed_file": str(midi_file),
-                    "signature": signature
+                    "change_vector": changer.to_spec()
                 }
             ):
+
                 audio_file = AudioFileID(
-                    generate_audio(
-                        t,
-                        midi_file,
-                        output_path
-                    ),
+                    changer.apply(midi, output_path),
                     extra={
-                        "transformation_vector": t.to_record(),
+                        "change_vector": changer.to_spec(),
                         "midi_file": midi_id.to_record()
                     }
                 )
@@ -114,10 +130,10 @@ for m_idx, midi_file in enumerate(seed_midi_files):
                 iteration=m_idx,
                 meta={
                     "seed_file": str(midi_file),
-                    "signature": signature
+                    "change_vector": changer.to_spec()
                 }
             ):
-                sql.write(
+                sql.insert(
                     "files",
                     sqlite_adapt(audio_file.to_record())
                 )
@@ -127,10 +143,10 @@ for m_idx, midi_file in enumerate(seed_midi_files):
                 logger,
                 "File generation failed",
                 file=str(midi_file),
-                signature=signature
+                change_vector = changer.to_spec()
             )
             continue
-        
+
     pb.update(1)
 
 logger.info("Finished Generating Files...")

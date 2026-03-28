@@ -3,9 +3,10 @@
 
 # =========================================================================== #
 from pathlib import Path
-from typing import Any, Optional
 
-from src.python.entities.features import *
+from remir.entities import (
+    Feature, FeatureOutput, FeatureExtractor, AlgorithmMeta, InputDomain
+)
 
 __all__ = [
     "LibrosaOnsets", "LibrosaRelativeMode",

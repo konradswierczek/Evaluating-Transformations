@@ -1,4 +1,4 @@
-# PAPER TITLE GOES HERE
+# USING IRRELEVANT MUSICAL TRANSFORMATIONS TO EVALUATE THE ROBUSTNESS OF AUDIO FEATURES WITHOUT GROUND TRUTH
 
 Data and reproducible analysis for "Using Irrelevant Musical Transformations to Evaluate the Robustness of Audio Features Without Ground Truth" by Konrad Swierczek & Michael Schutz submitted in Psychology of Music. This repository is roughly split into two halves: file generation and MIR analysis, run in Python (and a little bit of MATLAB for MIRtoolbox), and statistical analysis and data visualization, run in R.
 
@@ -16,7 +16,6 @@ Data and reproducible analysis for "Using Irrelevant Musical Transformations to 
 └── src
     ├── matlab # MIRtoolbox as git submodule.
     ├── python # File Generation and MIR Analysis.
-    │   ├── entities # Dependencies.
     │   ├── experiment # Scripts to run the experiment.
     └── R # Statistical Analysis and Data Visualization.
         ├── figures # Individual scripts for each figure in paper.

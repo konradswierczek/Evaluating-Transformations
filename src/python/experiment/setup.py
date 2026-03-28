@@ -2,16 +2,13 @@
 """
 
 # =========================================================================== #
-import logging
-
-from src.python.sql import SQLiteInterface, sqlite_adapt
+from remir.writers import SQLite3Interface, sqlite_adapt
 from src.python.extractors import *
 
 # =========================================================================== #
 DB_PATH = "data/data.db"
 
-sql = SQLiteInterface("data/data.db")
-sql.apply_schema("schema.sql")
+sql = SQLite3Interface("data/data.db")
 
 extractors = [
     EssentiaRelativeMode(),
@@ -23,7 +20,7 @@ extractors = [
 ]
 
 for e in extractors:
-    sql.write(
+    sql.insert(
         "extractors",
         sqlite_adapt(e.to_record())
     )
