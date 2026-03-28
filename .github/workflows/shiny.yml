@@ -24,6 +24,9 @@ jobs:
         run: |
           Rscript -e "install.packages('renv')"
           Rscript -e "renv::restore()"
+  
+      - name: Install rsconnect
+        run: Rscript -e "install.packages('rsconnect')"
 
       - name: Deploy app to shinyapps.io
         run: |
