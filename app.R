@@ -8,7 +8,7 @@ library(MAPLEemo)
 source("src/R/read_data.R")
 
 text_size <- 20
-title <- "PAPER TITLE GOES HERE"
+title <- "Using Irrelevant Musical Transformations to Evaluate the Robustness of Audio Features Without Ground Truth"
 
 # ============================================================================ #
 ui <- tagList(
